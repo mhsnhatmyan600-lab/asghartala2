@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اصغر طلا</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+<style>
+body { font-family: Vazirmatn, sans-serif; background: #121212; color: #fff; }
+.card-bg { background: #1e1e1e; border: 1px solid #333; }
+.gold-text { color: #d4af37; }
+.gold-bg { background: #d4af37; color: #000; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- هدر -->
+<header class="card-bg p-4 sticky top-0 z-50 shadow-md flex justify-between items-center flex-wrap gap-2">
+  <div class="flex items-center gap-3">
+    <div class="gold-bg w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl">اط</div>
+    <h1 class="text-xl font-bold gold-text">اصغر طلا</h1>
+  </div>
+  <div class="relative flex-1 max-w-md mx-2">
+    <input type="text" id="search" placeholder="جستجو..." class="w-full bg-[#2a2a2a] border border-[#444] rounded-full py-2 px-4 pr-10 text-sm focus:outline-none focus:border-[#d4af37]">
+    <i class="fa-solid fa-search absolute right-4 top-3 text-gray-400"></i>
+  </div>
+  <button onclick="toggleCart()" class="relative bg-[#2a2a2a] w-10 h-10 rounded-full border border-[#444] flex items-center justify-center">
+    <i class="fa-solid fa-cart-shopping text-lg gold-text"></i>
+    <span id="badge" class="hidden absolute -top-1 -right-1 gold-bg text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+  </button>
+</header>
+
+<!-- بنر -->
+<section class="max-w-6xl mx-auto w-full p-4 mt-2">
+  <div class="relative rounded-2xl overflow-hidden h-64 sm:h-80 bg-gradient-to-l from-black to-[#1a1a1a] border border-[#333] flex items-center">
+    <i class="fa-solid fa-shield-halved absolute -left-10 text-[250px] text-white/5 -rotate-12"></i>
+    <i class="fa-solid fa-moon absolute left-32 top-10 text-6xl text-[#d4af37]/20"></i>
+    <div class="relative z-10 p-6 sm:p-10 max-w-lg space-y-4">
+      <span class="gold-text bg-[#d4af37]/10 px-3 py-1 rounded-full text-xs border border-[#d4af37]/30">کالکشن ویژه</span>
+      <h2 class="text-3xl sm:text-5xl font-bold text-white leading-tight">تابلو، شمشیر<br>و تزیینات</h2>
+      <p class="text-gray-400 text-sm">نهایت شکوه و اصالت با محصولات دست‌ساز.</p>
+      <button class="gold-bg px-6 py-2 rounded-lg font-bold text-sm">مشاهده کالکشن</button>
+    </div>
+  </div>
+</section>
+
+<!-- دسته بندی‌ها -->
+<div class="max-w-6xl mx-auto w-full px-4 flex gap-3 overflow-x-auto pb-4 scrollbar-hide" id="cats"></div>
+
+<!-- محصولات -->
+<main class="max-w-6xl mx-auto w-full px-4 flex-1">
+  <div id="grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+</main>
+
+<!-- سبد خرید -->
+<div id="drawer" class="fixed inset-0 bg-black/80 z-50 hidden transition-opacity">
+  <div class="absolute left-0 top-0 bottom-0 w-80 bg-[#1e1e1e] border-r border-[#333] p-4 flex flex-col">
+    <div class="flex justify-between items-center border-b border-[#333] pb-3 mb-3">
+      <h3 class="font-bold">سبد خرید</h3>
+      <button onclick="toggleCart()"><i class="fa-solid fa-xmark text-gray-400 hover:text-white"></i></button>
+    </div>
+    <div id="cart-list" class="flex-1 overflow-y-auto space-y-3"></div>
+    <div class="border-t border-[#333] pt-3 mt-3">
+      <div class="flex justify-between mb-3 text-sm"><span>جمع کل:</span><span id="total" class="gold-text font-bold">۰</span></div>
+      <button class="gold-bg w-full py-2 rounded-lg font-bold">ثبت سفارش</button>
+    </div>
+  </div>
+</div>
+
+<!-- اسکریپت‌ها -->
+<script>
+// ساخت عکس ساده با SVG برای اینکه هیچ‌وقت خراب نشه
+const svgImg = (txt) => `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%232a2a2a"/><text x="50%" y="50%" font-size="100" text-anchor="middle" dominant-baseline="middle" fill="%23d4af37">${txt}</text></svg>`;
+
+const products = [
+  {id:1, name:"شمشیر دست‌ساز فولادی", shop:"کارگاه اصغر طلا", price:4500000, old:5200000, cat:"s", img:svgImg("⚔️")},
+  {id:2, name:"تابلو نقاشی خط", shop:"گالری هنر", price:2800000, old:3100000, cat:"p", img:svgImg("🖼️")},
+  {id:3, name:"سپر چرمی و فلزی", shop:"کارگاه اصغر طلا", price:3200000, old:3500000, cat:"d", img:svgImg("🛡️")},
+  {id:4, name:"شمشیر سامورایی", shop:"فروشگاه سامورایی", price:6500000, old:7000000, cat:"s", img:svgImg("🗡️")},
+  {id:5, name:"تابلو میناکاری", shop:"گالری هنر", price:5200000, old:5800000, cat:"p", img:svgImg("🎨")},
+  {id:6, name:"مجسمه برنزی", shop:"دکوراسیون پارسی", price:3800000, old:4100000, cat:"d", img:svgImg("🏺")},
+  {id:7, name:"خنجر عربی", shop:"کارگاه اصغر طلا", price:2900000, old:3400000, cat:"s", img:svgImg("🔪")},
+  {id:8, name:"تابلوفرش دستباف", shop:"فرش اصیل", price:12000000, old:15000000, cat:"p", img:svgImg("🧶")}
+];
+
+const cats = [
+  {id:"all", name:"همه", icon:"fa-border-all"},
+  {id:"s", name:"شمشیر", icon:"fa-khanda"},
+  {id:"p", name:"تابلو", icon:"fa-palette"},
+  {id:"d", name:"دکور", icon:"fa-gem"}
+];
+
+let cart = [];
+let activeCat = "all";
+
+function fmt(n){return new Intl.NumberFormat('fa-IR').format(n)+" تومان";}
+
+function renderCats(){
+  document.getElementById('cats').innerHTML = cats.map(c=>`
+    <button onclick="setCat('${c.id}')" class="px-4 py-2 rounded-lg text-sm border ${activeCat===c.id?'gold-bg border-[#d4af37]':'bg-[#2a2a2a] border-[#444] text-gray-300'} flex items-center gap-2 whitespace-nowrap">
+      <i class="fa-solid ${c.icon}"></i> ${c.name}
+    </button>`).join('');
+}
+
+function setCat(id){activeCat=id; renderCats(); renderGrid();}
+
+function renderGrid(){
+  let filtered = products.filter(p=>activeCat==="all"||p.cat===activeCat);
+  document.getElementById('grid').innerHTML = filtered.map(p=>`
+    <div class="card-bg rounded-xl overflow-hidden flex flex-col group">
+      <div class="aspect-square bg-[#2a2a2a] overflow-hidden relative">
+        <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+        <span class="absolute top-2 right-2 gold-bg text-xs px-2 py-1 rounded">${Math.round((p.old-p.price)/p.old*100)}٪</span>
+      </div>
+      <div class="p-3 flex-1 flex flex-col justify-between">
+        <div>
+          <div class="text-xs text-gray-400 mb-1"><i class="fa-solid fa-store"></i> ${p.shop}</div>
+          <h3 class="text-sm font-bold mb-2 line-clamp-2">${p.name}</h3>
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 line-through">${fmt(p.old)}</div>
+          <div class="gold-text font-bold mb-2">${fmt(p.price)}</div>
+          <button onclick="addToCart(${p.id})" class="w-full border border-[#444] hover:gold-bg hover:text-black py-1.5 rounded-lg text-xs transition">افزودن</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleCart(){document.getElementById('drawer').classList.toggle('hidden');}
+
+function addToCart(id){
+  let item = cart.find(c=>c.id===id);
+  if(item) item.qty++;
+  else { let p = products.find(p=>p.id===id); cart.push({...p, qty:1}); }
+  updateCart(); toggleCart();
+}
+
+function updateCart(){
+  let badge = document.getElementById('badge');
+  let totalCount = cart.reduce((s,i)=>s+i.qty,0);
+  let totalPrice = cart.reduce((s,i)=>s+(i.price*i.qty),0);
+  
+  badge.innerText = totalCount;
+  badge.classList.toggle('hidden', totalCount===0);
+  document.getElementById('total').innerText = fmt(totalPrice);
+
+  document.getElementById('cart-list').innerHTML = cart.map(i=>`
+    <div class="flex gap-2 items-center bg-[#2a2a2a] p-2 rounded-lg">
+      <img src="${i.img}" class="w-12 h-12 rounded object-cover">
+      <div class="flex-1 text-xs">
+        <div class="font-bold mb-1">${i.name}</div>
+        <div class="gold-text">${fmt(i.price)}</div>
+      </div>
+      <div class="flex flex-col items-center gap-1">
+        <button onclick="changeQty(${i.id}, 1)" class="w-6 h-6 bg-[#444] rounded">+</button>
+        <span>${i.qty}</span>
+        <button onclick="changeQty(${i.id}, -1)" class="w-6 h-6 bg-[#444] rounded">-</button>
+      </div>
+    </div>`).join('');
+}
+
+function changeQty(id, change){
+  let item = cart.find(c=>c.id===id);
+  if(!item) return;
+  item.qty += change;
+  if(item.qty <= 0) cart = cart.filter(c=>c.id!==id);
+  updateCart();
+}
+
+// اجرای اولیه
+renderCats();
+renderGrid();
+</script>
+</body>
+</html>
